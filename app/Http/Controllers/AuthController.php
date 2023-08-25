@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AuthUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Services\UserService;
 use Illuminate\Http\Request;
@@ -13,14 +14,9 @@ class AuthController extends Controller
         $this->middleware('auth: api', ['except' => ['login', 'register']]);
     }
 
-    public function login(Request $request) {
-        if ($validator->fails()) {
-            return response() -> json($validator->errors(), 422);
-        }
-        if (! $token = auth() -> attempt($validator->validated())) {
-            return response() -> json(['error' => 'Unauthorized'], 401);
-        }
-        return $this->createNewToken($token);
+    public function login(AuthUserRequest $request, UserService $service) {
+        $request->validated();
+        return $service->login($request);
     }
 
     public function register(CreateUserRequest $request, UserService $service) {

@@ -7,6 +7,8 @@ use App\Http\Requests\CreateUserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserRepository
 {
@@ -20,27 +22,23 @@ class UserRepository
     }
 
     public function auth(AuthUserRequest $request) {
-//        if (! $token = auth()->attempt($validator->validated())) {
-//            return response()->json(['error' => 'Unauthorized'], 401);
-//        }
-//        return $this->createNewToken($token);
-        $token = Auth::attempt($request->only('email', 'password'));
-        if ($token != null) {
-            return null;
-        } else {
-            return response()->json([
-                'token' => $token
-            ]);
+        $credentials = $request->only('email', 'password');
+        if (Auth::attempt($credentials)) {
+            $user = $request->user();
+            $token = JWTAuth::fromUser($user);
+            return response()->json(['accessToken' => $token], 200);
         }
+        return response()->json(['Error' => 'Неверный результат'], 401);
     }
 
     public function searchToEmail(AuthUserRequest $request) {
         return User::where('email', $request['email'])->first();
+
     }
 
     public function isPassword(AuthUserRequest $request) {
         $model = User::where('email', $request['email'])->first();
-        return Hash::check($model->password, $request['password']) ? $model : null;
+        return Hash::check($request['password'], $model->password,) ? $model : null;
     }
 
 }

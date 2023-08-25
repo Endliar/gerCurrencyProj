@@ -15,9 +15,9 @@ class UserService
     }
 
     public function login(AuthUserRequest $context) {
-        if ($this->repository->searchToEmail($context)) {
+        if ($user = $this->repository->searchToEmail($context)) {
             if ($this->repository->isPassword($context)) {
-                return $this->repository->auth($context);
+                return $this->repository->auth($context, $user);
             } else {
                 return response('Пароль неверен');
             }

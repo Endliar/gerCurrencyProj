@@ -15,7 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [GetCurrencyController::class, 'index']);
+Route::prefix('user')->middleware('jwt.auth')->group(function () {
+    Route::get('getCurrency/{date_start}', [GetCurrencyController::class, 'getCurrency']);
+});
+
 Route::prefix('user')->group(function () {
     Route::post('create', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
